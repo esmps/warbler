@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, EditProfileForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -112,7 +112,10 @@ def login():
 @app.route('/logout')
 def logout():
     """Handle logout of user."""
-
+    if g.user:
+        do_logout()
+        flash("Successfully logged out.", 'success')
+        return redirect('/login')
     # IMPLEMENT THIS
 
 
@@ -211,7 +214,27 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        user = User.authenticate(g.user.username,
+                                 form.password.data)
+        if user:
+            user.username = form.username.data or user.username
+            user.email = form.email.data or user.email
+            user.image_url = form.image_url.data or user.image_url
+            user.header_image_url = form.header_image_url.data or user.header_image_url
+            user.location = form.location.data or user.location
+            user.bio = form.bio.data or user.bio
+            db.session.add(user)
+            db.session.commit()
+            flash("Successfully updated profile!", "success")
+            return redirect(f'/users/{user.id}')
+    flash("Invalid password.", "error")
+    return render_template("/users/edit.html", form=form)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -292,8 +315,10 @@ def homepage():
     """
 
     if g.user:
+        following_ids = [u.id for u in g.user.following] + [g.user.id]
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(following_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
