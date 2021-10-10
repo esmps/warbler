@@ -51,6 +51,17 @@ class MessageViewTestCase(TestCase):
 
         db.session.commit()
 
+
+        self.testmessage = Message(text="Like this message", user_id=self.testuser.id)
+        self.testmessage.id = 999
+        db.session.add(self.testmessage)
+        db.session.commit()
+
+    def tearDown(self):
+        res = super().tearDown()
+        db.session.rollback()
+        return res
+
     def test_add_message(self):
         """Can use add a message?"""
 
@@ -69,5 +80,26 @@ class MessageViewTestCase(TestCase):
             # Make sure it redirects
             self.assertEqual(resp.status_code, 302)
 
-            msg = Message.query.one()
+            msg = Message.query.filter(Message.id != 999).first()
             self.assertEqual(msg.text, "Hello")
+
+
+    def test_message_id(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+            
+            resp = c.get('/messages/999')
+
+            self.assertEqual(resp.status_code, 200)
+
+
+
+# When you’re logged in, can you see the follower / following pages for any user?
+# When you’re logged out, are you disallowed from visiting a user’s follower / following pages?
+# When you’re logged in, can you add a message as yourself?
+# When you’re logged in, can you delete a message as yourself?
+# When you’re logged out, are you prohibited from adding messages?
+# When you’re logged out, are you prohibited from deleting messages?
+# When you’re logged in, are you prohibiting from adding a message as another user?
+# When you’re logged in, are you prohibiting from deleting a message as another user?
