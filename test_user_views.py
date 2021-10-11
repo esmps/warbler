@@ -31,3 +31,8 @@ db.create_all()
 # Don't have WTForms use CSRF at all, since it's a pain to test
 
 app.config['WTF_CSRF_ENABLED'] = False
+
+
+
+# When you’re logged in, can you see the follower / following pages for any user?
+# When you’re logged out, are you disallowed from visiting a user’s follower / following pages?
