@@ -1,9 +1,7 @@
-"""Message View tests."""
-
-# run these tests like:
-#
-#    FLASK_ENV=production python -m unittest test_message_views.py
-
+"""Message View tests.
+    to run these tests, copy and paste into your terminal:
+    FLASK_ENV=production python -m unittest test_message_views.py
+"""
 
 import os
 from unittest import TestCase
@@ -17,9 +15,6 @@ from models import db, connect_db, Message, User
 
 os.environ['DATABASE_URL'] = "postgresql:///warbler-test"
 
-
-# Now we can import app
-
 from app import app, CURR_USER_KEY
 
 # Create our tables (we do this here, so we only create the tables
@@ -28,7 +23,6 @@ from app import app, CURR_USER_KEY
 
 db.create_all()
 
-# Don't have WTForms use CSRF at all, since it's a pain to test
 app.config['WTF_CSRF_ENABLED'] = False
 
 
@@ -62,7 +56,10 @@ class MessageViewTestCase(TestCase):
         db.session.rollback()
         return res
     
+########### TESTS ON MESSAGE VIEWS: SHOW MESSAGE ###########
+
     def test_show_message(self):
+        """ Can you view a valid message? """
         m = Message(
             id = 24235,
             text= "Message message, text text!",
@@ -70,6 +67,9 @@ class MessageViewTestCase(TestCase):
         )
         db.session.add(m)
         db.session.commit()
+
+        # Since we need to change the session to mimic logging in,
+        # we need to use the changing-session trick:
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser_id
@@ -83,6 +83,7 @@ class MessageViewTestCase(TestCase):
             self.assertIn(m.text, str(resp.data))
 
     def test_show_message_invalid(self):
+        """ Can you view a message with an invalid id?"""
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser_id
@@ -90,27 +91,22 @@ class MessageViewTestCase(TestCase):
             resp = c.get('/messages/123456')
             self.assertEqual(resp.status_code, 404)
 
+########### TESTS ON MESSAGE VIEWS: ADD MESSAGE ###########
+
     def test_add_message(self):
-        """Can use add a message?"""
-
-        # Since we need to change the session to mimic logging in,
-        # we need to use the changing-session trick:
-
+        """Can user add a message?"""
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser_id
-            # Now, that session setting is saved, so we can have
-            # the rest of ours test
 
             resp = c.post("/messages/new", data={"text": "Hello"})
-
-            # Make sure it redirects
             self.assertEqual(resp.status_code, 302)
 
             msg = Message.query.filter(Message.id != 999).first()
             self.assertEqual(msg.text, "Hello")
 
     def test_add_message_loggedin(self):
+        """ Can user add a message if user is logged in?"""
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser_id
@@ -122,12 +118,14 @@ class MessageViewTestCase(TestCase):
             self.assertEqual(msg.text, "This is a message")
 
     def test_add_message_loggedout(self):
+        """ Can user add a message if user is logged out?"""
         with self.client as c:
             resp = c.post('/messages/new', data={"text": "Hello World"}, follow_redirects=True)
             self.assertEqual(200, resp.status_code)
             self.assertIn("Access unauthorized.", str(resp.data))
 
     def test_add_message_invalid_user(self):
+        """ Can user add a message if user is invalid?"""
         with self.client as c:
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = 5684
@@ -136,7 +134,10 @@ class MessageViewTestCase(TestCase):
             self.assertEqual(200, resp.status_code)
             self.assertIn("Access unauthorized.", str(resp.data))
 
+########### TESTS ON MESSAGE VIEWS: DELETE MESSAGE ###########
+
     def test_delete_message_loggedin(self):
+        """ Can user delete a message if user is logged in?"""
         m = Message(
             id = 78546,
             text= "Message message, text text!",
@@ -155,6 +156,7 @@ class MessageViewTestCase(TestCase):
             self.assertIsNone(m)
 
     def test_delete_message_loggedout(self):
+        """ Can user delete a message if user is logged out?"""
         m = Message(
             id = 456789,
             text= "Another message but it won't get deleted!",
@@ -172,6 +174,7 @@ class MessageViewTestCase(TestCase):
             self.assertIsNotNone(m)
 
     def test_delete_message_unauthorized(self):
+        """ Can logged in user delete another users message?"""
         u = User.signup(username="unauth",
                         email="unauth@unauth.com",
                         password="unauth123",

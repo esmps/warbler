@@ -55,15 +55,7 @@ def do_logout():
 
 @app.route('/signup', methods=["GET", "POST"])
 def signup():
-    """Handle user signup.
-
-    Create new user and add to DB. Redirect to home page.
-
-    If form not valid, present form.
-
-    If the there already is a user with that username: flash message
-    and re-present form.
-    """
+    """Handle user signup. """
 
     form = UserAddForm()
 
@@ -116,8 +108,7 @@ def logout():
         do_logout()
         flash("Successfully logged out.", 'success')
         return redirect('/login')
-    # IMPLEMENT THIS
-
+    return redirect('/')
 
 ##############################################################################
 # General user routes:
@@ -190,7 +181,7 @@ def add_follow(follow_id):
     g.user.following.append(followed_user)
     db.session.commit()
 
-    return redirect(f"/users")
+    return redirect(f"/users/{follow_id}")
 
 
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
@@ -247,7 +238,7 @@ def delete_user():
 
     db.session.delete(g.user)
     db.session.commit()
-
+    flash("Successfully deleted account.", "success")
     return redirect("/signup")
 
 @app.route('/users/<int:user_id>/likes')

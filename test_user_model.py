@@ -1,9 +1,6 @@
 """User model tests.
-
     to run these tests, copy and paste into your terminal:
-
-   python -m unittest test_user_model.py
-
+    python -m unittest test_user_model.py
 """
 
 import os
