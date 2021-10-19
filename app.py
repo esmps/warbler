@@ -28,6 +28,10 @@ connect_db(app)
 ##############################################################################
 # User signup/login/logout
 
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we set the 404 status explicitly
+    return render_template('404.html'), 404
 
 @app.before_request
 def add_user_to_g():
@@ -158,7 +162,7 @@ def show_following(user_id):
 
 
 @app.route('/users/<int:user_id>/followers')
-def users_followers(user_id):
+def show_followers(user_id):
     """Show list of followers of this user."""
 
     if not g.user:
@@ -208,8 +212,9 @@ def profile():
         return redirect("/")
     
     form = EditProfileForm()
+    user = g.user
     if form.validate_on_submit():
-        user = User.authenticate(g.user.username,
+        user = User.authenticate(user.username,
                                  form.password.data)
         if user:
             user.username = form.username.data or user.username
@@ -222,8 +227,8 @@ def profile():
             db.session.commit()
             flash("Successfully updated profile!", "success")
             return redirect(f'/users/{user.id}')
-    flash("Invalid password.", "error")
-    return render_template("/users/edit.html", form=form)
+        flash("Invalid password.", "error")
+    return render_template("/users/edit.html", form=form, user=user)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -301,7 +306,7 @@ def messages_show(message_id):
     return render_template('messages/show.html', message=msg)
 
 
-@app.route('/messages/<int:message_id>/delete', methods=["GET", "POST"])
+@app.route('/messages/<int:message_id>/delete', methods=["POST"])
 def messages_destroy(message_id):
     """Delete a message."""
 

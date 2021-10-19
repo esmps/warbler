@@ -3,7 +3,7 @@
   {% if users|length == 0 %}
     <h3>Sorry, no users found</h3>
   {% else %}
-    <div class="row justify-content-end">
+    <div class="row justify-content-center">
       <div class="col-sm-9">
         <div class="row">
 
@@ -16,7 +16,7 @@
                     <img src="{{ user.header_image_url }}" alt="" class="card-hero">
                   </div>
                   <div class="card-contents">
-                    <a href="/users/{{ user.id }}" class="card-link">
+                    <a href="{{ url_for('users_show', user_id=user.id)}}" class="card-link">
                       <img src="{{ user.image_url }}" alt="Image for {{ user.username }}" class="card-image">
                       <p>@{{ user.username }}</p>
                     </a>
@@ -24,12 +24,12 @@
                     {% if g.user %}
                       {% if g.user.is_following(user) %}
                         <form method="POST"
-                              action="/users/stop-following/{{ user.id }}">
+                              action="{{ url_for('stop_following', follow_id=user.id) }}">
                           <button class="btn btn-primary btn-sm">Unfollow</button>
                         </form>
                       {% else %}
                         <form method="POST"
-                              action="/users/follow/{{ user.id }}">
+                              action="{{ url_for('add_follow', follow_id=user.id) }}">
                           <button class="btn btn-outline-primary btn-sm">Follow</button>
                         </form>
                       {% endif %}

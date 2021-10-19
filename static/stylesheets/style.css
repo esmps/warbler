@@ -152,6 +152,10 @@ nav + .container {
   margin-bottom: 1rem;
 }
 
+.link-no-underline{
+  text-decoration: none;
+}
+
 /* ===================== User profile */
 
 .join-message {
@@ -266,6 +270,16 @@ nav + .container {
   left: 0;
   right: 0;
   z-index: 1;
+  border-radius: 5px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+              rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+#messages .message-home{
+  margin: 15px 0 0 10px;
+  border-radius: 5px;
+}
+.message-area > p{
+  margin-bottom: 5px;
 }
 
 #messages .list-group-item a:not(.message-link) {
@@ -284,11 +298,11 @@ nav + .container {
 }
 
 #sidebar-username {
-  margin-top: 30px;
   font-size: 21px;
   font-weight: bold;
   line-height: 28px;
   word-wrap: break-word;
+  padding-left: 150px;
 }
 
 @media (max-width: 768px) {
@@ -301,21 +315,26 @@ nav + .container {
   color: #657786;
 }
 
+#user-info-card{
+  margin: 30px auto auto 10px;
+}
+
 /* ==================== User cards on follower/following pages */
 
 .user-card {
   width: 100%;
-  padding-bottom: 100%;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
   position: relative;
   background: white;
   margin-top: 20px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+              rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 
 .user-card > div {
-  position: absolute;
+  /* position: absolute; */
   background: white;
+  height: auto;
 }
 
 .user-card form {
@@ -336,6 +355,8 @@ nav + .container {
   right: 0;
   bottom: 0;
   left: 0;
+  border-radius: 10px;
+
 }
 
 .card-image {
@@ -365,6 +386,7 @@ nav + .container {
   display: flex;
   flex-direction: column;
   width: 100%;
+  border-radius: 10px;
 }
 
 .image-wrapper {
@@ -381,6 +403,14 @@ nav + .container {
 
 p.card-bio {
   margin: 2em 10px 0;
+  padding-bottom: 10px;
+  height: 60px;
+}
+
+@media (max-width: 768px) {
+  .user-card{
+    padding-bottom: 0%;
+  }
 }
 
 /* ============================ Signed out home */
@@ -513,6 +543,7 @@ p.card-bio {
   top: 4px;
   right: 4px;
   z-index: 1;
+  padding: 3px;
 }
 
 .single-message {
@@ -525,19 +556,17 @@ p.card-bio {
 /* ================================ 404 page */
 
 .message-404 {
-  color: white;
-  margin-top: 2em;
+  background-color: white;
+  padding: 50px 0px;
+  margin-top: 100px;
   text-align: center;
 }
 
 .message-404 a {
-  color: white;
+  color: blue;
 }
 
 .message-404 > h4.display-4 {
   font-size: 2.5em;
 }
 
-.message-404 .form-inline input {
-  flex: 1;
-}
