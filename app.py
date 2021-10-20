@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask, render_template, request, flash, redirect, session, g
+from functools import wraps
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -28,9 +29,16 @@ connect_db(app)
 ##############################################################################
 # User signup/login/logout
 
+def verify_user_logged_in(function):
+    @wraps(function)
+    def wrapper():
+        if not g.user:
+            flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+
 @app.errorhandler(404)
 def page_not_found(e):
-    # note that we set the 404 status explicitly
     return render_template('404.html'), 404
 
 @app.before_request
@@ -148,38 +156,26 @@ def users_show(user_id):
                 .all())
     return render_template('users/show.html', user=user, messages=messages)
 
-
+@verify_user_logged_in
 @app.route('/users/<int:user_id>/following')
 def show_following(user_id):
     """Show list of people this user is following."""
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
     user = User.query.get_or_404(user_id)
     return render_template('users/following.html', user=user)
 
-
+@verify_user_logged_in
 @app.route('/users/<int:user_id>/followers')
 def show_followers(user_id):
     """Show list of followers of this user."""
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
     user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
 
-
+@verify_user_logged_in
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
     """Add a follow for the currently-logged-in user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
 
     followed_user = User.query.get_or_404(follow_id)
     g.user.following.append(followed_user)
@@ -187,14 +183,10 @@ def add_follow(follow_id):
 
     return redirect(f"/users/{follow_id}")
 
-
+@verify_user_logged_in
 @app.route('/users/stop-following/<int:follow_id>', methods=['POST'])
 def stop_following(follow_id):
     """Have currently-logged-in-user stop following this user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
 
     followed_user = User.query.get(follow_id)
     g.user.following.remove(followed_user)
@@ -202,14 +194,10 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
-
+@verify_user_logged_in
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
     """Update profile for current user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
     
     form = EditProfileForm()
     user = g.user
@@ -230,14 +218,10 @@ def profile():
         flash("Invalid password.", "error")
     return render_template("/users/edit.html", form=form, user=user)
 
-
+@verify_user_logged_in
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
     """Delete user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
 
     do_logout()
 
@@ -252,12 +236,10 @@ def get_likes(user_id):
     user = User.query.get_or_404(user_id)
     return render_template('/users/likes.html', user=user, likes=user.likes)
 
+@verify_user_logged_in
 @app.route('/users/add_like/<int:message_id>', methods=['POST'])
 def like_message(message_id):
     """ Like a message """
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
     
     liked_message = Message.query.get(message_id)
     likes = g.user.likes
@@ -275,16 +257,13 @@ def like_message(message_id):
 ##############################################################################
 # Messages routes:
 
+@verify_user_logged_in
 @app.route('/messages/new', methods=["GET", "POST"])
 def messages_add():
     """Add a message:
 
     Show form if GET. If valid, update message and redirect to user page.
     """
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
 
     form = MessageForm()
 
