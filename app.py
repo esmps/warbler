@@ -30,15 +30,17 @@ connect_db(app)
 # User signup/login/logout
 
 def verify_user_logged_in(function):
+    """ Verify if user is logged in """
+
     @wraps(function)
     def wrapper():
         if not g.user:
             flash("Access unauthorized.", "danger")
         return redirect("/")
 
-
 @app.errorhandler(404)
 def page_not_found(e):
+    """ Custom 404 page """
     return render_template('404.html'), 404
 
 @app.before_request
