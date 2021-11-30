@@ -1,4 +1,4 @@
-"""Message View tests.
+"""User View tests.
     to run these tests, copy and paste into your terminal:
     FLASK_ENV=production python -m unittest test_user_views.py
 """

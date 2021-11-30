@@ -1,9 +1,6 @@
-"""Message model tests.
-
-    to run these tests, copy and paste into your terminal:
-
-   python -m unittest test_message_model.py
-
+""" Message model tests.
+    To run these tests, copy and paste into your terminal:
+    python -m unittest test_message_model.py
 """
 
 import os
@@ -17,7 +14,7 @@ from app import app
 
 db.create_all()
 
-class UserModelTestCase(TestCase):
+class MessageModelTestCase(TestCase):
     """Test views for messages."""
 
     def setUp(self):
